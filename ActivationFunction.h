@@ -1,3 +1,5 @@
+// ActivationFunction.h
+
 #pragma once
 #include <cmath>
 #include <functional>

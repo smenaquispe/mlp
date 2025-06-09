@@ -1,3 +1,5 @@
+// Layer.h
+
 #include <vector>
 #include <random>
 #include "ActivationFunction.h"
@@ -64,16 +66,19 @@ class Layer {
 
 
         void setRandomWeights() {
-            mt19937 gen = getRandomGenerator();
-            auto dis = getRandomDistribution(-1.0, 1.0);
+            random_device rd;
+            mt19937 gen(rd());
+            double stddev = sqrt(2.0 / numInputs);
+            normal_distribution<double> dis(0.0, stddev);
 
             for (int i = 0; i < numOutputs; ++i) {
                 for (int j = 0; j < numInputs; ++j) {
                     weights[i][j] = dis(gen);
                 }
+                biases[i] = 0.01;
             }
         }
-
+        
         void setRandomBiases() {
             mt19937 gen = getRandomGenerator();
             auto dis = getRandomDistribution(-1.0, 1.0);
