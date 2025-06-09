@@ -4,7 +4,7 @@
 #include <sstream>
 #include "MLP.h"
 #include "ActivationFunction.h"
-
+#include "softmax.h"
 
 ActivationFunction sigmoid(
     [](double x) { return 1.0 / (1.0 + exp(-x)); },
@@ -25,6 +25,19 @@ ActivationFunction step(
     [](double x) { return x >= 0 ? 1 : 0; },
     [](double y) { return 0; }
 );
+
+ActivationFunction linear(
+    [](double x) { return x; },
+    [](double x) { return 1; }
+);
+
+double cross_entropy_loss(const vector<double>& y_pred, const vector<double>& y_true) {
+    double loss = 0.0;
+    for (size_t i = 0; i < y_true.size(); ++i) {
+        loss -= y_true[i] * log(y_pred[i] + 1e-15); // evitar log(0)
+    }
+    return loss;
+}
 
 
 using namespace std;
@@ -59,30 +72,30 @@ int main() {
     vector<vector<double>> inputs, targets;
     load_csv("mnist_train.csv", inputs, targets);
 
-    MultiLayerPerceptron mlp({784, 64, 10}, {sigmoid, sigmoid}, 0.1);
-    
+    MultiLayerPerceptron mlp({784, 256, 128, 10}, {relu, relu, linear}, 0.1, OptimizerType::Adam );
+
     ofstream curve("learning_curve.csv");
     curve << "epoch,error\n";
 
-    int epochs = 40;
+    int epochs = 10;
 
     for (int epoch = 0; epoch < epochs; ++epoch) {
-        double total_error = 0.0;
+    double total_loss = 0.0;
 
         for (size_t i = 0; i < inputs.size(); ++i) {
-            vector<double> output = mlp.forward(inputs[i]);
-            mlp.backward(inputs[i], targets[i]);
+            vector<double> logits = mlp.forward(inputs[i]);
+            vector<double> probs = softmax(logits);
 
-            for (size_t j = 0; j < output.size(); ++j) {
-                double diff = targets[i][j] - output[j];
-                total_error += diff * diff;
-            }
+
+
+            mlp.backward_from_softmax(inputs[i], targets[i], probs);
+
+            total_loss += cross_entropy_loss(probs, targets[i]);
         }
 
-        total_error /= inputs.size();
-        cout << "Epoch " << epoch + 1 << " Error: " << total_error << endl;
-        curve << epoch + 1 << "," << total_error << "\n";
+        cout << "Epoch " << epoch + 1 << " - Loss: " << total_loss / inputs.size() << endl;
     }
+
 
     // guardamos pesos para usarlo luego
     mlp.save_weights("mlp_weights.txt");
