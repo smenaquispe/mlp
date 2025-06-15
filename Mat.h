@@ -69,6 +69,10 @@ public:
     auto end() { return data.end(); }
     auto begin() const { return data.begin(); }
     auto end() const { return data.end(); }
+
+    Mat operator+(const Mat &other);
+    Mat operator*(double scalar);
+    Mat hadamard(const Mat &other); // producto elemento a elemento
 };
 
 #endif

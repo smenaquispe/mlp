@@ -7,6 +7,8 @@
 #include "ActivationFunction.h"
 #include "Layer.h"
 #include "ProgressBar.h"
+#include "Optimizer.h"
+#include "SGDOptimizer.h"
 
 using namespace std;
 
@@ -20,6 +22,7 @@ public:
     double learningRate = 0.1;
     size_t numLayers = 0;
     string optimizer = "SGD";
+    Optimizer *optimizerPtr = nullptr;
 
     MultiLayerPerceptron(
         const vector<int> &layerSizes,
@@ -34,6 +37,9 @@ public:
         }
 
         numLayers = layers.size();
+
+        if (optimizer == "SGD")
+            optimizerPtr = new SGDOptimizer(learningRate);
     }
 
     void train(const vector<vector<double>> &trainData,
@@ -224,6 +230,7 @@ private:
         {
             Layer &layer = layers[l];
             const vector<double> &in = (l == 0 ? input : layers[l - 1].outputs);
+            optimizerPtr->update(layer.weights.data, layer.biases, in, layer.errors);
 
             for (int i = 0; i < layer.numOutputs; ++i)
             {

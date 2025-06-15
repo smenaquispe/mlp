@@ -105,7 +105,7 @@ int main()
     load_csv("mnist_test.csv", inputsTest, targetsTest);
     cout << "Loaded " << inputsTest.size() << " test samples." << endl;
 
-    MultiLayerPerceptron mlp({784, 128, 10}, {relu, relu}, 0.01, "Adam");
+    MultiLayerPerceptron mlp({784, 128, 10}, {relu, relu}, 0.01, "SGD");
 
     mlp.train(inputs, targets, 10, inputsTest, targetsTest, 1);
     mlp.save_weights("mlp_weights.txt");
