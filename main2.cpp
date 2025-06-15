@@ -17,6 +17,12 @@ ActivationFunction relu(
     [](double x)
     { return x > 0 ? 1 : 0; });
 
+ActivationFunction identity(
+    [](double x)
+    { return x; },
+    [](double)
+    { return 1.0; });
+
 ActivationFunction linear(
     [](double x)
     { return x; },
@@ -105,9 +111,9 @@ int main()
     load_csv("mnist_test.csv", inputsTest, targetsTest);
     cout << "Loaded " << inputsTest.size() << " test samples." << endl;
 
-    MultiLayerPerceptron mlp({784, 128, 10}, {relu, relu}, 0.01, "SGD");
+    MultiLayerPerceptron mlp({784, 256, 128, 10}, {relu, relu, linear}, 0.001, "Adam");
 
-    mlp.train(inputs, targets, 10, inputsTest, targetsTest, 1);
+    mlp.train(inputs, targets, 5, inputsTest, targetsTest, 1);
     mlp.save_weights("mlp_weights.txt");
 
     return 0;

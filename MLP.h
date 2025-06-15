@@ -9,6 +9,7 @@
 #include "ProgressBar.h"
 #include "Optimizer.h"
 #include "SGDOptimizer.h"
+#include "AdamOptimizer.h"
 
 using namespace std;
 
@@ -40,6 +41,8 @@ public:
 
         if (optimizer == "SGD")
             optimizerPtr = new SGDOptimizer(learningRate);
+        else if (optimizer == "Adam")
+            optimizerPtr = new AdamOptimizer(learningRate);
     }
 
     void train(const vector<vector<double>> &trainData,
@@ -60,7 +63,7 @@ public:
 
             for (size_t i = 0; i < trainData.size(); ++i)
             {
-                vector<double> output = forward(trainData[i]);
+                vector<double> output = forward(trainData[i], 0.2, true);
                 backward(trainData[i], trainLabels[i]);
 
                 for (size_t j = 0; j < output.size(); ++j)
@@ -176,13 +179,26 @@ public:
     }
 
 private:
-    vector<double> forward(const vector<double> &input)
+    vector<double> forward(const vector<double> &input, double dropoutRate = 0.0, bool training = false)
     {
         vector<double> output = input;
         for (auto &layer : layers)
         {
-            output = layer.forward(output);
+            output = layer.forward(output, dropoutRate, training);
         }
+
+        double maxLogit = *max_element(output.begin(), output.end()); // para estabilidad numérica
+        double sumExp = 0.0;
+        for (size_t i = 0; i < output.size(); ++i)
+        {
+            output[i] = exp(output[i] - maxLogit);
+            sumExp += output[i];
+        }
+        for (size_t i = 0; i < output.size(); ++i)
+        {
+            output[i] /= sumExp;
+        }
+
         return output;
     }
 

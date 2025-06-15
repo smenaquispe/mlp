@@ -10,10 +10,15 @@ class Optimizer
 {
 public:
     virtual void update(
-        vector<vector<double>> &weights,
-        vector<double> &biases,
-        const vector<double> &inputs,
-        const vector<double> &errors) = 0;
+        std::vector<std::vector<double>> &weights,
+        std::vector<double> &biases,
+        const std::vector<double> &inputs,
+        const std::vector<double> &errors) = 0;
+
+    virtual void update_bias(
+        std::vector<double> &biases,
+        const std::vector<double> &errors,
+        int layerIndex) {} // Puedes dejarlo vacío por defecto
 
     virtual ~Optimizer() {}
 };

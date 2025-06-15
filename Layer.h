@@ -30,12 +30,29 @@ public:
           inputs(numInputs),
           errors(numOutputs) {}
 
-    vector<double> forward(const vector<double> &input)
+    vector<double> forward(const vector<double> &input, double dropoutRate = 0.0, bool training = false)
     {
         inputs = input;
         outputs = weights.dot(input);
+
         for (int i = 0; i < numOutputs; ++i)
+        {
             outputs[i] = activation.func(outputs[i] + biases[i]);
+
+            if (training && dropoutRate > 0.0)
+            {
+                double randVal = static_cast<double>(rand()) / RAND_MAX;
+                if (randVal < dropoutRate)
+                {
+                    outputs[i] = 0.0;
+                }
+                else
+                {
+                    outputs[i] /= (1.0 - dropoutRate);
+                }
+            }
+        }
+
         return outputs;
     }
 };
